@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="./resources/prism/prism.css" type="text/css">
+    <link rel="stylesheet" href="./css/ol.css" type="text/css">
+    <link rel="stylesheet" href="./resources/layout.css" type="text/css">
+    
+<!-- https://cdn.polyfill.io/v2/polyfill.min.js?features=fetch,Function.prototype.bind|gated     -->
+    <title>ArcGIS REST with 512x512 Tiles</title>
+    <style>
+    .ol-rotate{
+        display: none;
+    }
+    .ol-zoom{
+        display: none;
+    }
+    .ol-attribution{
+        display: none;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+  <script src="./resources/common.js"></script>
+  <script src="./resources/ol.js"></script>
+    <script src="./resources/prism/prism.min.js"></script>
+    <script>
+        var level=17;
+    var xpos=10583418;
+    var ypos=14061440;
+       currentCanvas=document.getElementById('map');
+        var currentWidth=currentCanvas.clientWidth;
+        var currentHeight=currentCanvas.clientHeight;
+
+        //  var numCol = parseInt(currentWidth/256)+2;
+        // var numRow = parseInt(currentHeight/256)+2;
+        
+        var colCenter = parseInt(xpos/256); //中心点
+        var rowCenter = parseInt(ypos/256);
+        var col = parseInt((xpos-currentWidth/2)/256);//起点
+        var row = parseInt((ypos-currentHeight/2)/256);
+
+        var attribution = new ol.Attribution({
+          html: 'Copyright:&copy; 2013 ESRI, i-cubed, GeoEye'
+        });
+
+        var projection = ol.proj.get('EPSG:4326');
+
+        // The tile size supported by the ArcGIS tile service.
+        var tileSize = 512;
+
+        // var urlTemplate = 'http://services.arcgisonline.com/arcgis/rest/services/' +
+        //     'ESRI_Imagery_World_2D/MapServer/tile/{z}/{y}/{x}';
+
+        // var map = new ol.Map({
+        //   target: 'map',
+        //   layers: [
+        //     new ol.layer.Tile({
+        //       source: new ol.source.XYZ({
+        //         attributions: [attribution],
+        //         maxZoom: 20,
+        //         projection: projection,
+        //         tileSize: tileSize,
+        //         tileUrlFunction: function(tileCoord) {
+        //           return urlTemplate.replace('{z}', (tileCoord[0] - 1).toString())
+        //                             .replace('{x}', tileCoord[1].toString())
+        //                             .replace('{y}', (-tileCoord[2] - 1).toString());
+        //         },
+        //         wrapX: true
+        //       })
+        //     })
+        //   ],
+        //   view: new ol.View({
+        //     center: [0, 0],
+        //     projection: projection,
+        //     zoom: 2,
+        //     minZoom: 2
+        //   })
+        // });
+        var resolutions = [];
+        for(var i=0; i<21; i++){
+            resolutions[i] = Math.pow(2, 20-i);
+        }
+console.log(resolutions);
+        var tilegrid  = new ol.tilegrid.TileGrid({
+            origin: [0, 0],
+            resolutions: resolutions
+        });
+
+        var map = new ol.Map({
+          target: 'map',
+          layers: [
+            new ol.layer.Tile({
+              source: new ol.source.TileImage({
+                // attributions: [attribution],
+                // reprojectionErrorThreshold: 0.5,
+                // maxZoom: 17,
+                // state: 'ready',
+                tileGrid: tilegrid,
+
+              tilePixelRatio: 1, // THIS IS IMPORTANT
+              minZoom: 5,
+              maxZoom: 5,
+            
+               
+                // projection: projection,
+                tileUrlFunction: function(tileCoord,fffff,bbbbb,vvv) {
+                    // console.log(tileCoord);
+                    // console.log(fffff);
+                    // console.log(bbbbb);
+                    // console.log(vvv);
+       
+
+                    
+                            // vatusLevel = level+(tileCoord[0] - 1);
+                            vatusLevel = 17;
+                            vatusCol = tileCoord[1];//X
+                            vatusRow = -tileCoord[2] - 1;//Y
+console.log(vatusCol,vatusRow);
+                     
+// console.log(col,row);
+// console.log(vatusCol,vatusRow);
+// console.log(vatusCol,vatusRow);
+
+                   
+
+                            return "http://app.maps.edushi.com/dest/C"+cCol+"R"+rRow+"/0/L"+vatusLevel+"/"+(vatusCol+colCenter)+","+(vatusRow+rowCenter)+".jpg";
+                            // return "http://app.maps.edushi.com/dest/C"+322+"R"+429+"/0/L"+level+"/"+(vatusCol+col)+","+(vatusRow+row)+".jpg";
+                },
+                wrapX: true
+              })
+            }),
+
+            new ol.layer.Image({
+                source: new ol.source.ImageStatic({
+                  url: './resources/edushi_pos.png',
+                  // crossOrigin: '',
+                  // projection: 'EPSG:27700',
+                  imageExtent: [0,0,1,1]
+                })
+            }),
+          ],
+          view: new ol.View({
+            center: [-1,0],
+            // projection: projection,
+            zoom: 5,
+            maxZoom: 5,
+            minZoom: 5,
+            constrainRotation: false,
+            enableRotation: false,
+            maxResolution: 156543.03392804097,
+            // minResolution: 156543.03392804097,
+            // minZoom: 17
+          }),
+          controls: ol.control.defaults({
+              rotate: false,
+               RotateOptions: ({
+                duration: 0,
+                autoHide: 0
+              })
+            }),
+        interactions: ol.interaction.defaults({
+    pinchRotate: false,
+    mouseWheelZoom: false,
+    pinchZoom: false,
+}),
+
+
+        });
+    
+    // var MMouseWheelZoom; // global so we can remove it later
+    // MMouseWheelZoom = new ol.interaction.MouseWheelZoom({
+    //     useAnchor:false,
+    // });
+    // map.addInteraction(MMouseWheelZoom);
+
+
+
+    function loadMap(level, xpos, ypos) {
+
+        var numCol = parseInt(canvas.width/256)+2;
+        var numRow = parseInt(canvas.height/256)+2;
+        var xoffset = parseInt(xpos - parseInt(xpos/256)*256);
+        var yoffset = parseInt(ypos - parseInt(ypos/256)*256);
+        
+        colCenter = parseInt(xpos/256); //中心点
+        rowCenter = parseInt(ypos/256);
+        col = parseInt((xpos-canvas.width/2)/256);//起点
+        row = parseInt((ypos-canvas.height/2)/256);
+        //console.log(colCenter,rowCenter,col,row)
+        for (var i=0; i<numCol; i++) {
+            for (var j=0; j<numRow; j++) {
+                vatus = new Image();
+                vatus.level = level;
+                vatus.col = i;
+                vatus.row = j;
+     
+                //  console.log(vatus)
+                vatus.src = "http://app.maps.edushi.com/dest/C"+cCol+"R"+rRow+"/0/L"+level+"/"+(vatus.col+col)+","+(vatus.row+row)+".jpg";
+                drawVatu(vatus, xoffset, yoffset);
+            }
+        }
+    }
+    </script>
+  </body>
+  </html>
